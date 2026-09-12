@@ -106,6 +106,7 @@
 - [[Demo Mode|Demo-Mode]]
 - [[Encryption Key Rotation|Encryption-Key-Rotation]]
 - [[Internal Network Access|Internal-Network-Access]]
+- [[Observability]]
 - [[Audit Log|Audit-Log]]
 - [[Security Hardening|Security-Hardening]]
 

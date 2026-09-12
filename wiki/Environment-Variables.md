@@ -149,6 +149,20 @@ proxying is disabled by default.
 
 ---
 
+## Observability
+
+TREK sends no telemetry and reads no observability variable of its own — there is nothing here to turn off. Traces,
+error reporting and product analytics are all attached from the outside, by an operator who wants them, pointed at a
+collector they run. [Observability](Observability) has the full setup; the short version is that OpenTelemetry's
+`OTEL_*` variables work against the official image without any change to TREK, because the container's entrypoint is a
+plain `node` invocation and `NODE_OPTIONS` reaches it.
+
+> **Packaging, not configuration, is the work.** The official image ships without npm, so the instrumentation packages
+> have to come from a derived image. Setting `OTEL_EXPORTER_OTLP_ENDPOINT` on the stock image does nothing at all:
+> there is no OpenTelemetry SDK in it to read the variable.
+
+---
+
 ## HTTPS / Reverse Proxy
 
 These three variables work together behind a TLS-terminating reverse proxy. See [Reverse-Proxy](Reverse-Proxy) for the
@@ -448,6 +462,7 @@ All of these are optional — the defaults are safe. Set `TREK_PLUGINS_ENABLED=f
 
 ## Related Pages
 
+- [Observability](Observability) — traces, error reporting and analytics, all off unless you attach them
 - [Reverse-Proxy](Reverse-Proxy) — HTTPS proxy setup and the `FORCE_HTTPS` / `TRUST_PROXY` / `COOKIE_SECURE` trio
 - [OIDC-SSO](OIDC-SSO) — complete OIDC configuration guide
 - [MCP-Overview](MCP-Overview) — MCP server setup and rate limiting
