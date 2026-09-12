@@ -96,3 +96,25 @@ export const managedAdminTabs: ManagedAdminTab[] = []
 
 /** Extra entries for the desktop navbar and the mobile tab bar. */
 export const managedNavItems: ManagedNavItem[] = []
+
+/**
+ * Called once, at boot, before the app renders — the hook an install needs when
+ * it reports to something of its own (an error collector, a product analytics
+ * endpoint, an uptime beacon).
+ *
+ * Empty here, like everything else in this file, and that emptiness is the whole
+ * promise: a build of this repository calls a function that does nothing, opens
+ * no connection and loads no script. TREK sends no telemetry, and adding a seam
+ * for an operator who wants their own is not the same thing as sending any.
+ *
+ * It is not called at all for a visitor who asked not to be tracked. `boot.ts`
+ * reads that signal and stands down before reaching this function, so the
+ * refusal survives a build that replaces this file — which is the point of
+ * putting the gate there and not here. An operator who needs a boot hook that
+ * runs unconditionally wants a different seam, not this one.
+ *
+ * Keep it synchronous and keep it cheap. It runs on the path to first paint, and
+ * anything slow here is paid for by every visitor on every load; hand the slow
+ * part to an idle callback or a dynamic import of your own.
+ */
+export function onAppBoot(): void {}

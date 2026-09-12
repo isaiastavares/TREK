@@ -36,6 +36,7 @@ import { startConnectivityProbe } from './sync/connectivity'
 import { requestPersistentStorage } from './sync/persistentStorage'
 import ErrorBoundary, { RootErrorFallback } from './components/shared/ErrorBoundary'
 import { installGlobalErrorHandlers } from './utils/globalErrorHandlers'
+import { runManagedAppBoot } from './managed/boot'
 
 maybeInstallTouchDragPolyfill()
 startConnectivityProbe()
@@ -43,6 +44,8 @@ startConnectivityProbe()
 requestPersistentStorage()
 // Event handlers and async code never reach a boundary; this is where they land.
 installGlobalErrorHandlers()
+// Empty in this build, and skipped entirely for a visitor who set Do Not Track.
+runManagedAppBoot()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
