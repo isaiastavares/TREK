@@ -5,6 +5,7 @@ import { DiscoveryMetadataService } from './discovery-metadata.service';
 import { AddonsService } from '../addons/addons.service';
 import { ADDON_IDS } from '../../addons';
 import { ALL_SCOPES } from '../../mcp/scopes';
+import { getMcpServerName } from '../../app-config';
 
 /**
  * The hand-rolled halves of OAuth discovery (the SDK metadata router itself is
@@ -55,7 +56,7 @@ export class DiscoveryController {
       authorization_servers:    [meta.issuer],
       bearer_methods_supported: ['header'],
       scopes_supported:         ALL_SCOPES,
-      resource_name:            'TREK MCP',
+      resource_name:            getMcpServerName(),
     });
   }
 

@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const es: NotificationLocale = {
   email: {
-    footer: 'Recibiste esto porque tienes las notificaciones activadas en TREK.',
+    footer: 'Recibiste esto porque tienes las notificaciones activadas en {appName}.',
     manage: 'Gestionar preferencias',
     madeWith: 'Made with',
-    openTrek: 'Abrir TREK',
+    openTrek: 'Abrir {appName}',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,15 +26,15 @@ const es: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Invitación Vacay Fusion',
-      body: `${p.actor} te invitó a fusionar planes de vacaciones. Abre TREK para aceptar o rechazar.`,
+      body: `${p.actor} te invitó a fusionar planes de vacaciones. Abre {appName} para aceptar o rechazar.`,
     }),
     vacay_share: (p) => ({
       title: 'Calendario Vacay compartido',
-      body: `${p.actor} compartió su calendario de vacaciones contigo. Abre TREK para verlo.`,
+      body: `${p.actor} compartió su calendario de vacaciones contigo. Abre {appName} para verlo.`,
     }),
     collection_invite: (p) => ({
       title: 'Invitación a colección',
-      body: `${p.actor} te invitó a compartir una colección. Abre TREK para aceptar o rechazar.`,
+      body: `${p.actor} te invitó a compartir una colección. Abre {appName} para aceptar o rechazar.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} fotos compartidas`,
@@ -67,7 +67,7 @@ const es: NotificationLocale = {
   passwordReset: {
     subject: 'Restablecer tu contraseña',
     greeting: 'Hola',
-    body: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta de TREK. Haz clic en el botón de abajo para establecer una nueva contraseña.',
+    body: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta de {appName}. Haz clic en el botón de abajo para establecer una nueva contraseña.',
     ctaIntro: 'Restablecer contraseña',
     expiry: 'Este enlace caduca en 60 minutos.',
     ignore: 'Si no solicitaste esto, puedes ignorar este correo — tu contraseña no cambiará.',

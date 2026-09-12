@@ -57,7 +57,7 @@ export class DawarichMcp {
   @Tool({
     name: 'list_dawarich_suggestions',
     description:
-      "List the stays TREK pulled from the caller's connected Dawarich instance and is holding for review: where they were, when they arrived and left, how long they stayed, and which trip the stay falls into. Each entry carries the id the accept tools take. Use it to answer what someone actually did on a trip, or to fill a travel journal from what was recorded rather than from memory. Nothing here has been added to a trip yet — accepting is a separate, explicit step.",
+      "List the stays {appName} pulled from the caller's connected Dawarich instance and is holding for review: where they were, when they arrived and left, how long they stayed, and which trip the stay falls into. Each entry carries the id the accept tools take. Use it to answer what someone actually did on a trip, or to fill a travel journal from what was recorded rather than from memory. Nothing here has been added to a trip yet — accepting is a separate, explicit step.",
     inputSchema: {
       tripId: z.number().int().positive().optional().describe('Only stays that fall inside this trip'),
       state: z.enum(['new', 'accepted', 'dismissed']).optional()
@@ -186,7 +186,7 @@ export class DawarichMcp {
   @Tool({
     name: 'get_dawarich_trip_track',
     description:
-      "Fetch the route actually recorded during a trip, grouped by local day, straight from the caller's Dawarich instance. Each day carries its segments with start and end times and, where Dawarich classified it, how it was travelled. Use it to answer what route someone really took, or how a day's movement compares with what was planned. Nothing is stored in TREK — this is a live read of the recording.",
+      "Fetch the route actually recorded during a trip, grouped by local day, straight from the caller's Dawarich instance. Each day carries its segments with start and end times and, where Dawarich classified it, how it was travelled. Use it to answer what route someone really took, or how a day's movement compares with what was planned. Nothing is stored in {appName} — this is a live read of the recording.",
     inputSchema: {
       tripId: z.number().int().positive(),
       from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Narrow to this first day'),

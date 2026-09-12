@@ -174,6 +174,27 @@ describe('McpRegistry.attach', () => {
     expect(templates).toEqual(['fixture_item']);
   });
 
+  it('leaves descriptions alone when no transform is configured', async () => {
+    harness = await createAttachHarness(buildRegistry(), { userId: 7, canRead: true, canWrite: true, allow: true });
+    const read = (await harness.client.listTools()).tools.find((t) => t.name === 'read_tool');
+    expect(read?.description).toBe('Reads.');
+  });
+
+  it('runs every description through the configured transform, at attach rather than at decoration', async () => {
+    // A description is a static literal next to its handler, but may have to
+    // name something only the host knows — the product name, for TREK. One
+    // transform covers tools, resources, templates and prompts alike, so a
+    // placeholder cannot resolve differently depending on the entry kind.
+    const registry = createTestRegistry([new FixtureMcp(new Greeter())], {
+      accessPolicy: policy,
+      describe: (text) => text.replaceAll('Reads.', 'Reads, for Acme Trips.'),
+    });
+    harness = await createAttachHarness(registry, { userId: 7, canRead: true, canWrite: true, allow: true });
+
+    const read = (await harness.client.listTools()).tools.find((t) => t.name === 'read_tool');
+    expect(read?.description).toBe('Reads, for Acme Trips.');
+  });
+
   it('exposes tool metadata (description, annotations, input schema) to the client', async () => {
     harness = await createAttachHarness(buildRegistry(), { userId: 7, canRead: true, canWrite: true, allow: true });
     const read = (await harness.client.listTools()).tools.find((t) => t.name === 'read_tool');

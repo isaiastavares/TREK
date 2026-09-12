@@ -1,7 +1,7 @@
 import crypto, { randomBytes, randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { ADDON_IDS } from '../../addons';
-import { getMcpSafeUrl } from '../../app-config';
+import { getMcpSafeUrl, getMcpServerName } from '../../app-config';
 // Import from scopes/sessionManager directly, NOT the ../../mcp barrel: the
 // barrel pulls the whole tools fan-out (and via the domain bridges, the Nest
 // services) into every consumer of this module — a nest→mcp→nest module cycle.
@@ -637,7 +637,7 @@ export class OauthService {
       ? params.resource.replace(/(?<!\/)\/+$/, '')
       : mcpResource;
     if (resource !== mcpResource) {
-      return { valid: false, error: 'invalid_target', error_description: 'Requested resource must be the TREK MCP endpoint' };
+      return { valid: false, error: 'invalid_target', error_description: `Requested resource must be the ${getMcpServerName()} endpoint` };
     }
 
     const requestedScopes = (params.scope || '').split(' ').filter(Boolean);

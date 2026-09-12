@@ -55,7 +55,43 @@ like `NODE_ENV=staging` still boots.
 | `ALLOWED_ORIGINS`           | Comma-separated origins for CORS and email notification links                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | same-origin                     |
 | `ALLOW_INTERNAL_NETWORK`    | Allow outbound requests to private/RFC-1918 IPs. Set `true` if Immich or other integrated services are on your local network. Loopback (`127.x`) and link-local (`169.254.x`) addresses remain blocked regardless.                                                                                                                                                                                                                                                                                                                | `false`                         |
 | `APP_URL`                   | Public base URL (e.g. `https://trek.example.com`). Required when OIDC is enabled — must match the redirect URI registered with your IdP. Also used as the base URL for email notification links and subscribable calendar feed URLs (the `webcal://`/`https://` links the Subscribe dialog hands to Google/Apple/Outlook).                                                                                                                                                                                                          | —                               |
+| `APP_NAME`                  | The product name, used everywhere this install announces itself. See [below](#app_name--the-product-name-in-one-place).                                                                                                                                                                                                                                                                                                                                                                                                          | `TREK`                          |
 | `TREK_WIKI_DIR`             | Where the in-app Help pages (`/help`) read their content from. TREK ships this wiki and serves it from disk, so the docs always match the version you are running. You should not need to set this — it is an escape hatch for unusual layouts. If the directory cannot be found, Help falls back to fetching the repository's `wiki/` folder from the `main` branch on GitHub (which can be ahead of the release you are running, and needs outbound network access).                                                               | the bundled `wiki/` directory   |
+
+### `APP_NAME` — the product name in one place
+
+Unset, this is `TREK` and nothing about the instance changes. Set, it replaces the product name on every surface that
+announces this install to somebody else:
+
+- the `User-Agent` sent to Nominatim, Overpass, Wikipedia and Wikimedia, and the one used for GitHub, plugin registry
+  and wiki requests
+- the `PRODID` of every downloaded `.ics` and every subscribable calendar feed, and the calendar name and filename an
+  untitled trip falls back to
+- the `creator` attribute of a downloaded GPX file
+- the OpenAPI title and description at `/api/docs`
+- the MCP server's name, the `realm` of its `WWW-Authenticate` challenges, and the instructions every AI client reads on
+  connect
+- the subject prefix, header and `From` display name of outgoing email (see [Email / SMTP](#email--smtp))
+- the text of a notification on every channel it reaches — email, in-app and push — and the `source` field, Discord
+  footer and Slack link label of an outgoing webhook
+- the name shown by a passkey prompt and the issuer shown by an authenticator app, for credentials enrolled from now on
+- the description of every MCP tool, resource and prompt, so an AI client is told about the same product throughout
+- the wording of errors and notices that name the app: a rejected backup upload, an unreachable SMTP relay, the
+  first-run console banner
+
+It does **not** rename anything a deployment or a stored row depends on: the `TREK_*` variables, the `trek_session`
+cookie, table and column names, the `trek-plugin-sdk` package, the `trek` field of a plugin manifest, the
+`github.com/liketrek/TREK` link the outbound `User-Agent` carries as provenance, the `X-TREK-Instance` header, or the
+Immich `deviceId` used to correlate uploads.
+
+Two kinds of text keep saying TREK on purpose, because they are about the software rather than about your instance:
+plugin compatibility messages ("requires TREK 3.2.0+", which is the version range a plugin declares support for), the
+new-version notification, and the TREK Places index, which is a service this install calls rather than a name it goes
+by.
+
+TREK's logo and the "Travel Resource & Exploration Kit" tagline are the project's own marks: an install that sets
+`APP_NAME` to something else sends email without them, which is what
+[the brand policy](https://github.com/liketrek/TREK/blob/main/TRADEMARKS.md) asks of anything not called TREK.
 
 ### `HOST` — Source and Proxmox installs only
 
@@ -218,6 +254,13 @@ over the database values.
 
 `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` are all required for email delivery to work. `SMTP_USER` and `SMTP_PASS` are
 optional (for unauthenticated relays).
+
+| Variable         | Description                                                                                                                                                       | Default    |
+|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| `MAIL_FROM_NAME` | Display name for the `From` header, when `SMTP_FROM` is a bare address. Defaults to [`APP_NAME`](#app_name--the-product-name-in-one-place); set it only when the relay's verified sender identity has to differ. | `APP_NAME` |
+
+A sender that already spells a display name out (`Acme Trips <no-reply@acme.example>`) is used verbatim — neither
+variable touches it.
 
 ---
 

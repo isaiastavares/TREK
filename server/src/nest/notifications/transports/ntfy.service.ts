@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { readEnv } from '../../../app-config';
 import { logDebug, logError, logInfo } from '../../audit/audit-log.logger';
 import { decrypt_api_key } from '../../common/crypto/apiKeyCrypto';
 import { DatabaseService } from '../../database/database.service';
@@ -204,7 +205,7 @@ export class NtfyService {
       const sent = await this.sendNtfy(url, cfg.token ?? null, {
         event: 'test',
         title: 'Test Notification',
-        body: 'This is a test notification from TREK. If you received this, your ntfy configuration is working correctly.',
+        body: `This is a test notification from ${readEnv().app.appName}. If you received this, your ntfy configuration is working correctly.`,
       });
       return sent ? { success: true } : { success: false, error: 'Failed to send ntfy notification' };
     } catch (err) {

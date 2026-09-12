@@ -61,6 +61,7 @@ export const envSchema = z.object({
   LOG_LEVEL: oneOf(['error', 'warn', 'info', 'debug']),
   APP_VERSION: anyString,
   APP_URL: url,
+  APP_NAME: anyString,
   ALLOWED_ORIGINS: anyString,
   // Candidates lowercased so mixed-case codes (zh-TW) validate case-insensitively.
   DEFAULT_LANGUAGE: oneOf(SUPPORTED_LANGUAGE_CODES.map((c) => c.toLowerCase())),
@@ -93,6 +94,7 @@ export const envSchema = z.object({
   SMTP_USER: anyString,
   SMTP_PASS: anyString,
   SMTP_FROM: anyString,
+  MAIL_FROM_NAME: anyString,
   SMTP_SKIP_TLS_VERIFY: boolStr,
 
   // WebAuthn

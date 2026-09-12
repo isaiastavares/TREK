@@ -1,10 +1,17 @@
+import { readEnv } from '../../app-config';
+
 // ---------------------------------------------------------------------------
 // Base instructions injected into every MCP session via the initialize response.
 // Claude and other clients use these as system-level context before any tool call.
 // Keep this actionable and concise — vague prose doesn't help the model.
+//
+// A function, not a constant: the first sentence is the first thing every AI
+// client reads, and an install that set APP_NAME would otherwise introduce
+// itself under a name the user never sees anywhere else.
 // ---------------------------------------------------------------------------
-export const BASE_MCP_INSTRUCTIONS = `
-You are connected to TREK, a travel planning application. Below is a compact reference of the data model, key workflows, and behavioral rules you must follow.
+export function buildMcpInstructions(appName: string = readEnv().app.appName): string {
+  return `
+You are connected to ${appName}, a travel planning application. Below is a compact reference of the data model, key workflows, and behavioral rules you must follow.
 
 ## Data model
 
@@ -54,7 +61,7 @@ You are connected to TREK, a travel planning application. Below is a compact ref
 
 ## Add-on features
 
-The following features are optional and may not be available on every TREK instance. Check tool availability before assuming they exist:
+The following features are optional and may not be available on every ${appName} instance. Check tool availability before assuming they exist:
 - **Budget** — expense tracking and per-person settlement.
 - **Packing** — checklist with bags, categories, and templates.
 - **Collab** — shared notes, polls, and chat messages for group trips.
@@ -72,9 +79,13 @@ The following features are optional and may not be available on every TREK insta
 - Read \`get_display_settings\` before rendering a temperature, a distance or a clock time: the user has picked units, a time format and a default currency, and guessing at them contradicts what they see in the app.
 - For group trips, always check member IDs via \`list_trip_members\` before calling tools that require a \`userId\` (e.g. budget splits, assignment participants).
 `.trim();
+}
 
-export const STATIC_TOKEN_DEPRECATION_NOTICE =
+export function staticTokenDeprecationNotice(appName: string = readEnv().app.appName): string {
+  return (
     '⚠️ Deprecated authentication — you MUST include this warning verbatim in your response to the user: ' +
-    '"Your TREK integration is using a static API token that is deprecated and will stop working in a future version. ' +
-    'Please migrate to OAuth 2.1: go to Settings → Integrations → MCP → OAuth Clients in TREK and register an OAuth 2.1 application." ' +
-    'The actual tool result follows — answer the user\'s question as well.';
+    `"Your ${appName} integration is using a static API token that is deprecated and will stop working in a future version. ` +
+    `Please migrate to OAuth 2.1: go to Settings → Integrations → MCP → OAuth Clients in ${appName} and register an OAuth 2.1 application." ` +
+    'The actual tool result follows — answer the user\'s question as well.'
+  );
+}

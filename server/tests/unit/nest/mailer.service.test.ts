@@ -6,7 +6,9 @@
  * internal relay, and it must announce itself instead of downgrading quietly.
  * The second half covers what the admin sees when a send goes wrong (#2196):
  * bounded phases, a classified reason in the response, a line in the log, and
- * the password in neither.
+ * the password in neither. The last block covers APP_NAME reaching the mail —
+ * the From header, the subject and the mail's own header — and an install that
+ * sets nothing getting exactly the mail it got before.
  * Constructed directly (no TestingModule, repo convention).
  */
 
@@ -43,7 +45,7 @@ vi.mock('../../../src/nest/audit/audit-log.logger', () => ({
   logWarn: vi.fn(),
 }));
 
-import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { createTables } from '../../../src/db/schema';
 import { runMigrations } from '../../../src/db/migrations';
 import { resetTestDb } from '../../helpers/test-db';
@@ -64,6 +66,12 @@ function configureSmtp(): void {
 
 function newMailer(): MailerService {
   return new MailerService(new DatabaseService(testDb));
+}
+
+/** The options object of the most recent transport.sendMail() call. */
+function lastMail(): Record<string, unknown> {
+  const calls = sendMail.mock.calls;
+  return calls[calls.length - 1][0] as Record<string, unknown>;
 }
 
 /** The options object of the most recent nodemailer.createTransport() call. */
@@ -265,5 +273,145 @@ describe('MailerService test send', () => {
 
     const lines = vi.mocked(logInfo).mock.calls.map(call => call[0]);
     expect(lines.some(line => line.includes('SMTP test email sent to=admin@example.com smtp=mail.internal.example:587'))).toBe(true);
+  });
+});
+
+describe('MailerService product name', () => {
+  const NAME_VARS = ['APP_NAME', 'MAIL_FROM_NAME'] as const;
+  const saved = new Map<string, string | undefined>();
+
+  beforeEach(() => {
+    for (const key of NAME_VARS) {
+      saved.set(key, process.env[key]);
+      delete process.env[key];
+    }
+  });
+
+  afterEach(() => {
+    for (const key of NAME_VARS) {
+      const prev = saved.get(key);
+      if (prev === undefined) delete process.env[key];
+      else process.env[key] = prev;
+    }
+  });
+
+  it('MAILER-015: with APP_NAME unset the mail is exactly what it always was', async () => {
+    configureSmtp();
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    expect(lastMail().from).toBe('trek@example.com');
+    expect(lastMail().subject).toBe('TREK — Subject');
+    expect(lastMail().html).toContain('>TREK</div>');
+    expect(lastMail().html).toContain('Travel Resource &amp; Exploration Kit');
+  });
+
+  it('MAILER-016: APP_NAME reaches the subject and the From display name', async () => {
+    configureSmtp();
+    process.env.APP_NAME = 'Acme Trips';
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    expect(lastMail().from).toEqual({ name: 'Acme Trips', address: 'trek@example.com' });
+    expect(lastMail().subject).toBe('Acme Trips — Subject');
+  });
+
+  it('MAILER-017: MAIL_FROM_NAME moves only the From name; the subject keeps APP_NAME', async () => {
+    configureSmtp();
+    process.env.APP_NAME = 'Acme Trips';
+    process.env.MAIL_FROM_NAME = 'Acme';
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    expect(lastMail().from).toEqual({ name: 'Acme', address: 'trek@example.com' });
+    expect(lastMail().subject).toBe('Acme Trips — Subject');
+  });
+
+  it('MAILER-018: a sender that already spells a display name out is passed through untouched', async () => {
+    setAppSetting('smtp_host', 'mail.internal.example');
+    setAppSetting('smtp_port', '587');
+    setAppSetting('smtp_from', 'Acme Trips <no-reply@acme.example>');
+    process.env.APP_NAME = 'Acme Trips';
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    expect(lastMail().from).toBe('Acme Trips <no-reply@acme.example>');
+  });
+
+  it('MAILER-019: a renamed install carries neither the TREK mark nor the acronym', async () => {
+    configureSmtp();
+    process.env.APP_NAME = 'Acme Trips';
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    const html = lastMail().html as string;
+    expect(html).toContain('>Acme Trips</div>');
+    expect(html).not.toContain('Travel Resource &amp; Exploration Kit');
+    expect(html).not.toContain('data:image/svg+xml;base64,');
+    expect(html).toContain('Open Acme Trips');
+    expect(html).toContain('notifications enabled in Acme Trips');
+  });
+
+  it('MAILER-020: the password-reset mail names the instance in both the text and the HTML part', async () => {
+    configureSmtp();
+    process.env.APP_NAME = 'Acme Trips';
+
+    await newMailer().sendPasswordResetEmail('someone@example.com', 'https://acme.example/reset', null);
+
+    expect(lastMail().subject).toBe('Acme Trips — Reset your password');
+    expect(lastMail().text).toContain('password for your Acme Trips account');
+    expect(lastMail().html).toContain('password for your Acme Trips account');
+    expect(lastMail().text).not.toContain('TREK');
+  });
+
+  it("MAILER-021: the admin's test send announces the instance, not the product", async () => {
+    configureSmtp();
+    process.env.APP_NAME = 'Acme Trips';
+
+    expect(await newMailer().testSmtp('admin@example.com')).toEqual({ success: true });
+
+    expect(lastMail().subject).toBe('Acme Trips — Test Notification');
+    expect(lastMail().text).toBe(
+      'This is a test email from Acme Trips. If you received this, your SMTP configuration is working correctly.',
+    );
+  });
+
+  it('MAILER-022: a name with HTML metacharacters cannot break out of the header', async () => {
+    configureSmtp();
+    process.env.APP_NAME = 'A&B <script>';
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    const html = lastMail().html as string;
+    expect(html).toContain('A&amp;B &lt;script&gt;');
+    expect(html).not.toContain('<script>');
+  });
+
+  it('MAILER-022b: no placeholder survives into the mail a recipient opens', async () => {
+    // The failure this catches is a string carrying {appName} down a path that
+    // never substitutes it — a literal "{appName}" in somebody's inbox, which
+    // is worse than the stale wording the placeholder was meant to fix.
+    configureSmtp();
+    process.env.APP_NAME = 'Acme Trips';
+    const mailer = newMailer();
+
+    await mailer.sendEmail('someone@example.com', 'Subject', 'Body');
+    expect(lastMail().html).not.toContain('{appName}');
+    expect(lastMail().text).not.toContain('{appName}');
+
+    await mailer.sendPasswordResetEmail('someone@example.com', 'https://acme.example/reset', null);
+    expect(lastMail().html).not.toContain('{appName}');
+    expect(lastMail().text).not.toContain('{appName}');
+    expect(lastMail().subject).not.toContain('{appName}');
+  });
+
+  it('MAILER-023: MAIL_FROM_NAME alone adds a display name without renaming anything else', async () => {
+    configureSmtp();
+    process.env.MAIL_FROM_NAME = 'Acme';
+
+    await newMailer().sendEmail('someone@example.com', 'Subject', 'Body');
+
+    expect(lastMail().from).toEqual({ name: 'Acme', address: 'trek@example.com' });
+    expect(lastMail().subject).toBe('TREK — Subject');
   });
 });

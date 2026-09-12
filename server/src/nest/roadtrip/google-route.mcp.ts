@@ -14,7 +14,7 @@ export class GoogleRouteMcp {
     access: { group: 'trips', mode: 'read' }, when: addonGate(ADDON_IDS.ROADTRIP) })
   async preview({ url }: { url: string }) { return ok(await this.routes.preview(url)); }
 
-  @Tool({ name: 'import_google_maps_route', description: 'Append reviewed Google Maps stops to an existing trip day in supplied order. Creates places and visits atomically. Requires place and day editing permissions. Existing visits remain. TREK calculates the road geometry; no Google route geometry is preserved.',
+  @Tool({ name: 'import_google_maps_route', description: 'Append reviewed Google Maps stops to an existing trip day in supplied order. Creates places and visits atomically. Requires place and day editing permissions. Existing visits remain. {appName} calculates the road geometry; no Google route geometry is preserved.',
     inputSchema: { tripId: z.number().int().positive(), ...googleRouteImportSchema.shape },
     access: { group: 'trips', mode: 'write' }, when: addonGate(ADDON_IDS.ROADTRIP) })
   import(input: GoogleRouteImport & { tripId: number }, ctx: McpContext) { return ok(this.routes.import(input.tripId, ctx.userId, input)); }

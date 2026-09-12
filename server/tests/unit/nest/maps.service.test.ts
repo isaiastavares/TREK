@@ -2456,16 +2456,24 @@ describe('buildUserAgent', () => {
   const base = 'TREK Travel Planner (https://github.com/liketrek/TREK)';
 
   it('MAPS-094: returns the bare base UA when no instance URL is configured', () => {
-    expect(buildUserAgent(undefined)).toBe(base);
-    expect(buildUserAgent('')).toBe(base);
+    expect(buildUserAgent('TREK', undefined)).toBe(base);
+    expect(buildUserAgent('TREK', '')).toBe(base);
   });
 
   it('MAPS-095: appends a configured https instance URL so the deployment is identifiable', () => {
-    expect(buildUserAgent('https://trek.example.org')).toBe(`${base}; https://trek.example.org`);
+    expect(buildUserAgent('TREK', 'https://trek.example.org')).toBe(`${base}; https://trek.example.org`);
   });
 
   it('MAPS-096: drops the http://localhost fallback — it is not a unique identifier', () => {
-    expect(buildUserAgent('http://localhost:3001')).toBe(base);
+    expect(buildUserAgent('TREK', 'http://localhost:3001')).toBe(base);
+  });
+
+  it('MAPS-096b: a renamed install identifies itself, and still links to where the code comes from', () => {
+    // The link is provenance, not identity: these APIs ask for a UA that says
+    // who is calling, and the operator is reached through the instance URL.
+    expect(buildUserAgent('Acme Trips', 'https://acme.example')).toBe(
+      'Acme Trips Travel Planner (https://github.com/liketrek/TREK); https://acme.example',
+    );
   });
 });
 

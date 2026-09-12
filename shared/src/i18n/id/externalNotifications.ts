@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const id: NotificationLocale = {
   email: {
-    footer: 'Anda menerima ini karena Anda telah mengaktifkan notifikasi di TREK.',
+    footer: 'Anda menerima ini karena Anda telah mengaktifkan notifikasi di {appName}.',
     manage: 'Kelola preferensi di Pengaturan',
     madeWith: 'Dibuat dengan',
-    openTrek: 'Buka TREK',
+    openTrek: 'Buka {appName}',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,15 +26,15 @@ const id: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Undangan Penggabungan Vacay',
-      body: `${p.actor} mengundang Anda untuk menggabungkan rencana liburan. Buka TREK untuk menerima atau menolak.`,
+      body: `${p.actor} mengundang Anda untuk menggabungkan rencana liburan. Buka {appName} untuk menerima atau menolak.`,
     }),
     vacay_share: (p) => ({
       title: 'Kalender Vacay Dibagikan',
-      body: `${p.actor} membagikan kalender cutinya dengan Anda. Buka TREK untuk melihatnya.`,
+      body: `${p.actor} membagikan kalender cutinya dengan Anda. Buka {appName} untuk melihatnya.`,
     }),
     collection_invite: (p) => ({
       title: 'Undangan koleksi',
-      body: `${p.actor} mengundang Anda untuk berbagi koleksi. Buka TREK untuk menerima atau menolak.`,
+      body: `${p.actor} mengundang Anda untuk berbagi koleksi. Buka {appName} untuk menerima atau menolak.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} foto dibagikan`,
@@ -67,7 +67,7 @@ const id: NotificationLocale = {
   passwordReset: {
     subject: 'Setel ulang kata sandi Anda',
     greeting: 'Halo',
-    body: 'Kami menerima permintaan untuk menyetel ulang kata sandi akun TREK Anda. Klik tombol di bawah untuk menetapkan kata sandi baru.',
+    body: 'Kami menerima permintaan untuk menyetel ulang kata sandi akun {appName} Anda. Klik tombol di bawah untuk menetapkan kata sandi baru.',
     ctaIntro: 'Setel ulang kata sandi',
     expiry: 'Tautan ini kedaluwarsa dalam 60 menit.',
     ignore: 'Jika Anda tidak meminta ini, Anda dapat mengabaikan email ini — kata sandi Anda tidak akan berubah.',

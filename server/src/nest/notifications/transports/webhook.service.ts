@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { readEnv } from '../../../app-config';
 import { logDebug, logError, logInfo } from '../../audit/audit-log.logger';
 import { decrypt_api_key } from '../../common/crypto/apiKeyCrypto';
 import { DatabaseService } from '../../database/database.service';
@@ -23,7 +24,7 @@ export function buildWebhookBody(
           description: payload.body,
           url: payload.link,
           color: 0x3b82f6,
-          footer: { text: payload.tripName ? `Trip: ${payload.tripName}` : 'TREK' },
+          footer: { text: payload.tripName ? `Trip: ${payload.tripName}` : readEnv().app.appName },
           timestamp: new Date().toISOString(),
         },
       ],
@@ -32,13 +33,13 @@ export function buildWebhookBody(
 
   if (isSlack) {
     const trip = payload.tripName ? `  •  _${payload.tripName}_` : '';
-    const link = payload.link ? `\n<${payload.link}|Open in TREK>` : '';
+    const link = payload.link ? `\n<${payload.link}|Open in ${readEnv().app.appName}>` : '';
     return JSON.stringify({
       text: `*${payload.title}*\n${payload.body}${trip}${link}`,
     });
   }
 
-  return JSON.stringify({ ...payload, timestamp: new Date().toISOString(), source: 'TREK' });
+  return JSON.stringify({ ...payload, timestamp: new Date().toISOString(), source: readEnv().app.appName });
 }
 
 /** Outgoing webhooks: the per-user and the admin-global URL, and the POST itself. */
@@ -106,7 +107,7 @@ export class WebhookService {
       const sent = await this.sendWebhook(url, {
         event: 'test',
         title: 'Test Notification',
-        body: 'This is a test webhook from TREK. If you received this, your webhook configuration is working correctly.',
+        body: `This is a test webhook from ${readEnv().app.appName}. If you received this, your webhook configuration is working correctly.`,
       });
       return sent ? { success: true } : { success: false, error: 'Failed to send webhook' };
     } catch (err) {

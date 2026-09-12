@@ -16,13 +16,16 @@ import { haversineMetres } from '../common/geo';
 // uniquely identifies the deploying instance — a shared, generic UA gets rate-limited
 // and throttled harder (see #1309). When the instance URL is configured we append it;
 // getAppUrl()'s bare http://localhost fallback isn't a useful identifier, so we drop it.
-export function buildUserAgent(instanceUrl: string | undefined): string {
-  const base = 'TREK Travel Planner (https://github.com/liketrek/TREK)';
+// The upstream link stays whatever the instance is called: it is where the
+// software comes from, not who is running it, and an operator these APIs need
+// to reach about a misbehaving crawler is identified by the instance URL.
+export function buildUserAgent(appName: string, instanceUrl: string | undefined): string {
+  const base = `${appName} Travel Planner (https://github.com/liketrek/TREK)`;
   if (instanceUrl && !instanceUrl.startsWith('http://localhost')) return `${base}; ${instanceUrl}`;
   return base;
 }
-// Computed once at load — getAppUrl() reads only env vars, which don't change at runtime.
-export const UA = buildUserAgent(getAppUrl());
+// Computed once at load — getAppUrl() and appName read only env vars, which don't change at runtime.
+export const UA = buildUserAgent(readEnv().app.appName, getAppUrl());
 
 /**
  * The fields places:searchText is asked for.

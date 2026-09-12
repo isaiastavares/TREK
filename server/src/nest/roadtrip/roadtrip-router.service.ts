@@ -1,3 +1,4 @@
+import { readEnv } from '../../app-config';
 import { readCappedJson, discardBody } from '../../utils/cappedFetch';
 import { safeFetchAdminConfigured } from '../../utils/ssrfGuard';
 import { DatabaseService } from '../database/database.service';
@@ -128,7 +129,7 @@ export class RoadtripRouterService {
       this.nextRequest = Date.now() + 1100;
       const response = await safeFetchAdminConfigured(url, {
         signal: AbortSignal.timeout(20000),
-        headers: { 'User-Agent': 'TREK Roadtrip', 'Content-Type': 'application/json', 'X-Client-Id': 'trek' },
+        headers: { 'User-Agent': `${readEnv().app.appName} Roadtrip`, 'Content-Type': 'application/json', 'X-Client-Id': 'trek' },
         ...(body ? { method: 'POST', body: JSON.stringify(body) } : {}),
       });
       if (!response.ok) {

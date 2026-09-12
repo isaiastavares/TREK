@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const tr: NotificationLocale = {
   email: {
-    footer: "TREK'te bildirimleri etkinleştirdiğiniz için bunu aldınız.",
+    footer: "{appName}'te bildirimleri etkinleştirdiğiniz için bunu aldınız.",
     manage: 'Ayarlarda tercihleri yönetin',
     madeWith: 'Made with',
-    openTrek: "TREK'i aç",
+    openTrek: "{appName}'i aç",
   },
   events: {
     trip_invite: (p) => ({
@@ -26,15 +26,15 @@ const tr: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Vacay Fusion Daveti',
-      body: `${p.actor} sizi tatil planlarını birleştirmeye davet etti. Kabul etmek veya reddetmek için TREK'i açın.`,
+      body: `${p.actor} sizi tatil planlarını birleştirmeye davet etti. Kabul etmek veya reddetmek için {appName}'i açın.`,
     }),
     vacay_share: (p) => ({
       title: 'Vacay Takvimi Paylaşıldı',
-      body: `${p.actor} tatil takvimini sizinle paylaştı. Görüntülemek için TREK'i açın.`,
+      body: `${p.actor} tatil takvimini sizinle paylaştı. Görüntülemek için {appName}'i açın.`,
     }),
     collection_invite: (p) => ({
       title: 'Koleksiyon daveti',
-      body: `${p.actor} sizi bir koleksiyonu paylaşmaya davet etti. Kabul etmek veya reddetmek için TREK’i açın.`,
+      body: `${p.actor} sizi bir koleksiyonu paylaşmaya davet etti. Kabul etmek veya reddetmek için {appName}’i açın.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} fotoğraf paylaşıldı`,
@@ -67,7 +67,7 @@ const tr: NotificationLocale = {
   passwordReset: {
     subject: 'Şifrenizi sıfırlayın',
     greeting: 'Merhaba',
-    body: 'TREK hesabınızın şifresini sıfırlamak için bir istek aldık. Yeni bir şifre belirlemek için aşağıdaki butona tıklayın.',
+    body: '{appName} hesabınızın şifresini sıfırlamak için bir istek aldık. Yeni bir şifre belirlemek için aşağıdaki butona tıklayın.',
     ctaIntro: 'Şifreyi sıfırla',
     expiry: 'Bu bağlantı 60 dakika içinde sona erer.',
     ignore: 'Bu isteği siz yapmadıysanız, bu e-postayı güvenle yok sayabilirsiniz — şifreniz değişmeyecektir.',

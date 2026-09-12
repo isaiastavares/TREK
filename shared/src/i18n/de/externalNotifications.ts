@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const de: NotificationLocale = {
   email: {
-    footer: 'Du erhältst diese E-Mail, weil du Benachrichtigungen in TREK aktiviert hast.',
+    footer: 'Du erhältst diese E-Mail, weil du Benachrichtigungen in {appName} aktiviert hast.',
     manage: 'Einstellungen verwalten',
     madeWith: 'Made with',
-    openTrek: 'TREK öffnen',
+    openTrek: '{appName} öffnen',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,15 +26,15 @@ const de: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Vacay Fusion-Einladung',
-      body: `${p.actor} hat dich eingeladen, Urlaubspläne zu fusionieren. Öffne TREK um anzunehmen oder abzulehnen.`,
+      body: `${p.actor} hat dich eingeladen, Urlaubspläne zu fusionieren. Öffne {appName} um anzunehmen oder abzulehnen.`,
     }),
     vacay_share: (p) => ({
       title: 'Vacay Kalender geteilt',
-      body: `${p.actor} hat den eigenen Urlaubskalender mit dir geteilt. Öffne TREK um ihn anzusehen.`,
+      body: `${p.actor} hat den eigenen Urlaubskalender mit dir geteilt. Öffne {appName} um ihn anzusehen.`,
     }),
     collection_invite: (p) => ({
       title: 'Sammlungs-Einladung',
-      body: `${p.actor} hat dich eingeladen, eine Sammlung zu teilen. Öffne TREK um anzunehmen oder abzulehnen.`,
+      body: `${p.actor} hat dich eingeladen, eine Sammlung zu teilen. Öffne {appName} um anzunehmen oder abzulehnen.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} Fotos geteilt`,
@@ -69,7 +69,7 @@ const de: NotificationLocale = {
   passwordReset: {
     subject: 'Passwort zurücksetzen',
     greeting: 'Hallo',
-    body: 'Wir haben eine Anfrage erhalten, das Passwort für dein TREK-Konto zurückzusetzen. Klicke auf den Button unten, um ein neues Passwort festzulegen.',
+    body: 'Wir haben eine Anfrage erhalten, das Passwort für dein {appName}-Konto zurückzusetzen. Klicke auf den Button unten, um ein neues Passwort festzulegen.',
     ctaIntro: 'Passwort zurücksetzen',
     expiry: 'Dieser Link ist 60 Minuten gültig.',
     ignore: 'Wenn du das nicht warst, ignoriere diese E-Mail — dein Passwort bleibt unverändert.',

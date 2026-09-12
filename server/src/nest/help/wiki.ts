@@ -84,7 +84,7 @@ async function fetchText(file: string): Promise<string> {
   if (cached && fresh(cached.ts)) return cached.data;
   try {
     const res = await fetch(`${RAW_BASE}/${encodeURIComponent(file)}`, {
-      headers: { 'User-Agent': 'TREK-help', Accept: 'text/plain' },
+      headers: { 'User-Agent': `${readEnv().app.appName}-help`, Accept: 'text/plain' },
       signal: AbortSignal.timeout(WIKI_TIMEOUT_MS),
     });
     if (res.ok && !exceedsDeclaredLength(res, WIKI_MAX_BYTES)) {
@@ -260,7 +260,7 @@ export async function getWikiAsset(assetPath: string): Promise<{ buf: Buffer; ty
   if (cached && fresh(cached.ts)) return { buf: cached.buf, type: cached.type };
   try {
     const res = await fetch(`${RAW_BASE}/${assetPath.split('/').map(encodeURIComponent).join('/')}`, {
-      headers: { 'User-Agent': 'TREK-help' },
+      headers: { 'User-Agent': `${readEnv().app.appName}-help` },
       signal: AbortSignal.timeout(WIKI_TIMEOUT_MS),
     });
     if (res.ok && !exceedsDeclaredLength(res, WIKI_MAX_BYTES)) {

@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { ADDON_IDS, MCP_GATED_ADDON_IDS } from '../../addons';
-import { readEnv } from '../../app-config';
+import { readEnv, serverUserAgent } from '../../app-config';
 import { updateJwtSecret } from '../../config';
 // Import from sessionManager directly, NOT the ../../mcp barrel — the direct
 // path keeps this module's graph minimal, and the split predates the barrel's
@@ -404,7 +404,7 @@ export class AdminService {
   private async fetchGithub(url: string): Promise<unknown | null> {
     try {
       const resp = await fetch(url, {
-        headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'TREK-Server' },
+        headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': serverUserAgent() },
         signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
       });
       if (!resp.ok) return null;

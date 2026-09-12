@@ -6,6 +6,7 @@ import { getClientIp } from '../audit/client-ip';
 import { logWarn } from '../audit/audit-log.logger';
 import { AuditService } from '../audit/audit.service';
 import { Public } from '../auth/public.decorator';
+import { getMcpServerName } from '../../app-config';
 
 const MIN = 60_000;
 
@@ -139,13 +140,13 @@ export class OauthPublicController {
   userinfo(@Headers('authorization') auth: string | undefined, @Res() res: Response): void {
     if (!this.oauth.mcpEnabled()) { res.status(404).end(); return; }
     if (!auth || !auth.toLowerCase().startsWith('bearer ')) {
-      res.set('WWW-Authenticate', 'Bearer realm="TREK MCP"');
+      res.set('WWW-Authenticate', `Bearer realm="${getMcpServerName()}"`);
       res.status(401).json({ error: 'invalid_token' });
       return;
     }
     const info = this.oauth.getUserByAccessToken(auth.slice(7));
     if (!info) {
-      res.set('WWW-Authenticate', 'Bearer realm="TREK MCP", error="invalid_token"');
+      res.set('WWW-Authenticate', `Bearer realm="${getMcpServerName()}", error="invalid_token"`);
       res.status(401).json({ error: 'invalid_token' });
       return;
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import nodemailer from 'nodemailer';
 import { PASSWORD_RESET_I18N } from '@trek/shared/i18n/externalNotifications';
-import { readEnv } from '../../../app-config';
+import { readEnv, withAppName } from '../../../app-config';
 import { logError, logInfo, logDebug, logWarn } from '../../audit/audit-log.logger';
 import { decrypt_api_key } from '../../common/crypto/apiKeyCrypto';
 import { DatabaseService } from '../../database/database.service';
@@ -129,6 +129,22 @@ export class MailerService {
     );
   }
 
+  /**
+   * The From header. The configured sender is an address, and a recipient
+   * should see who is writing in front of it rather than a bare mailbox they
+   * have no reason to recognise. An operator who
+   * already spelled a display name out — `Acme Trips <no-reply@acme.example>` —
+   * has said what they want and that string is passed through untouched. The
+   * object form is deliberate: nodemailer does the RFC 5322 quoting, so a name
+   * containing a comma or a quote can never be concatenated into a broken
+   * header. Unset — no APP_NAME, no MAIL_FROM_NAME — means nothing changes.
+   */
+  private fromHeader(config: SmtpConfig): string | { name: string; address: string } {
+    const fromName = readEnv().smtp.fromName;
+    if (!fromName || config.from.includes('<')) return config.from;
+    return { name: fromName, address: config.from };
+  }
+
   /** Is SMTP configured at the instance level? (Independent of any one user's address.) */
   isSmtpConfigured(): boolean {
     return !!(readEnv().smtp.host || this.getAppSetting('smtp_host'));
@@ -181,12 +197,13 @@ export class MailerService {
       return { delivered: 'log' };
     }
 
+    const { appName } = readEnv().app;
     try {
       await this.createTransport(smtpCfg).sendMail({
-        from: smtpCfg.from,
+        from: this.fromHeader(smtpCfg),
         to,
-        subject: `TREK — ${strings.subject}`,
-        text: `${strings.greeting}, ${to}\n\n${strings.body}\n\n${strings.ctaIntro}: ${resetUrl}\n\n${strings.expiry}\n${strings.ignore}`,
+        subject: `${appName} — ${strings.subject}`,
+        text: `${strings.greeting}, ${to}\n\n${withAppName(strings.body, appName)}\n\n${strings.ctaIntro}: ${resetUrl}\n\n${strings.expiry}\n${strings.ignore}`,
         html: buildPasswordResetHtml(strings.subject, strings, to, resetUrl, lang),
       });
       logInfo(`Password reset email sent to=${to}`);
@@ -211,9 +228,9 @@ export class MailerService {
 
     try {
       await this.createTransport(config).sendMail({
-        from: config.from,
+        from: this.fromHeader(config),
         to,
-        subject: `TREK — ${subject}`,
+        subject: `${readEnv().app.appName} — ${subject}`,
         text: body,
         html: buildEmailHtml(subject, body, lang, navigateTarget),
       });
@@ -242,11 +259,12 @@ export class MailerService {
       return { success: false, error: reason };
     }
     try {
+      const { appName } = readEnv().app;
       await this.createTransport(config, TEST_SOCKET_TIMEOUT_MS).sendMail({
-        from: config.from,
+        from: this.fromHeader(config),
         to,
-        subject: 'TREK — Test Notification',
-        text: 'This is a test email from TREK. If you received this, your SMTP configuration is working correctly.',
+        subject: `${appName} — Test Notification`,
+        text: `This is a test email from ${appName}. If you received this, your SMTP configuration is working correctly.`,
       });
       logInfo(`SMTP test email sent to=${to} ${this.describeTarget(config)}`);
       return { success: true };

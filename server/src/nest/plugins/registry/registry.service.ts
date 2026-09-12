@@ -1,4 +1,4 @@
-import { readEnv } from '../../../app-config';
+import { readEnv, serverUserAgent } from '../../../app-config';
 import { DatabaseService } from '../../database/database.service';
 import { discoverPlugins } from '../install/discovery';
 import { bypassedRange, hostSatisfies, hostVersion, normalizedHost, trekRangeBypassed, warnRangeBypass } from '../install/host-compat';
@@ -182,7 +182,7 @@ export class PluginRegistryService {
     if (force) _detailCache.clear();
     try {
       const url = force ? `${REGISTRY_URL}${REGISTRY_URL.includes('?') ? '&' : '?'}_=${Date.now()}` : REGISTRY_URL;
-      const headers: Record<string, string> = { 'User-Agent': 'TREK-Server' };
+      const headers: Record<string, string> = { 'User-Agent': serverUserAgent() };
       if (force) {
         headers['Cache-Control'] = 'no-cache';
         headers.Pragma = 'no-cache';

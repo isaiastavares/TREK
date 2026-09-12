@@ -43,6 +43,18 @@ describe('deriveApp', () => {
     expect(deriveApp({ APP_URL: 'https://x.example/' }).appUrl).toBe('https://x.example/');
   });
 
+  it('APP_NAME: the product name in one place, TREK when unset', () => {
+    expect(deriveApp({}).appName).toBe('TREK');
+    expect(deriveApp({}).isDefaultAppName).toBe(true);
+    expect(deriveApp({ APP_NAME: 'Acme Trips' }).appName).toBe('Acme Trips');
+    expect(deriveApp({ APP_NAME: 'Acme Trips' }).isDefaultAppName).toBe(false);
+    // Blank means "use the default", as everywhere else in this file.
+    expect(deriveApp({ APP_NAME: '   ' }).appName).toBe('TREK');
+    expect(deriveApp({ APP_NAME: '  Acme  ' }).appName).toBe('Acme');
+    // Spelling the default out is not a rename — the logo and the tagline stay.
+    expect(deriveApp({ APP_NAME: 'TREK' }).isDefaultAppName).toBe(true);
+  });
+
   it('DEFAULT_LANGUAGE resolves: case-insensitive, canonical code, en fallback', () => {
     expect(deriveApp({ DEFAULT_LANGUAGE: 'EN' }).defaultLanguage).toBe('en');
     expect(deriveApp({ DEFAULT_LANGUAGE: 'de' }).defaultLanguage).toBe('de');
@@ -153,6 +165,14 @@ describe('deriveOidc', () => {
 });
 
 describe('deriveSmtp', () => {
+  it('MAIL_FROM_NAME falls back to APP_NAME, and undefined leaves the sender alone', () => {
+    expect(deriveSmtp({}).fromName).toBeUndefined();
+    expect(deriveSmtp({ APP_NAME: 'Acme Trips' }).fromName).toBe('Acme Trips');
+    expect(deriveSmtp({ MAIL_FROM_NAME: 'Acme' }).fromName).toBe('Acme');
+    expect(deriveSmtp({ APP_NAME: 'Acme Trips', MAIL_FROM_NAME: 'Acme' }).fromName).toBe('Acme');
+    expect(deriveSmtp({ APP_NAME: 'Acme Trips', MAIL_FROM_NAME: '  ' }).fromName).toBe('Acme Trips');
+  });
+
   it('SMTP_SKIP_TLS_VERIFY coerces the boolean-like family', () => {
     expect(deriveSmtp({ SMTP_SKIP_TLS_VERIFY: 'true' }).skipTlsVerify).toBe(true);
     expect(deriveSmtp({ SMTP_SKIP_TLS_VERIFY: 'TRUE' }).skipTlsVerify).toBe(true);

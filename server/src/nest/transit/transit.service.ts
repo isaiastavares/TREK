@@ -49,7 +49,7 @@ const TRANSIT_API_BASE = readEnv().integrations.transitApiBase;
 let userAgent: string | null = null;
 
 function getUserAgent(): string {
-  userAgent ??= buildUserAgent(getAppUrl());
+  userAgent ??= buildUserAgent(readEnv().app.appName, getAppUrl());
   return userAgent;
 }
 

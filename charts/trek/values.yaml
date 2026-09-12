@@ -39,6 +39,9 @@ env:
   # APP_URL: "https://trek.example.com"
   # Public base URL of this instance. Required when OIDC is enabled — must match the redirect URI registered with your IdP.
   # Also used as the base URL for links in email notifications and other external links.
+  # APP_NAME: "TREK"
+  # Product name used wherever this instance announces itself: the outbound User-Agent, the PRODID of a
+  # downloaded calendar, the OpenAPI title, the MCP server name and the subject of an email. Default: TREK.
   # FORCE_HTTPS: "false"
   # Optional. When "true": HTTPS redirect, HSTS, CSP upgrade-insecure-requests, secure cookies. Only behind a TLS proxy. Requires TRUST_PROXY.
   # HSTS_INCLUDE_SUBDOMAINS: "false"

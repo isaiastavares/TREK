@@ -1,5 +1,7 @@
 export { readEnv, validateEnvAtBoot } from './env';
 export { getAppUrl, getMcpSafeUrl } from './app-url';
+export { getMcpServerName, serverUserAgent, withAppName } from './app-name';
+export { DEFAULT_APP_NAME } from './derive';
 export type { AppEnv, RawEnv } from './env';
 export {
   deriveAll,

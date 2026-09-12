@@ -4,6 +4,7 @@ import type {
   McpAccessValidator,
   McpAttachOptions,
   McpContext,
+  McpDescriptionTransform,
   McpDynamicTool,
   McpDynamicToolSource,
   McpEntry,
@@ -24,6 +25,7 @@ interface BoundEntry {
 export interface McpRegistryOptions {
   accessPolicy?: McpAccessPolicy;
   validateAccess?: McpAccessValidator;
+  describe?: McpDescriptionTransform;
 }
 
 type AnyHandler = (this: unknown, ...handlerArgs: unknown[]) => unknown;
@@ -84,12 +86,24 @@ export class McpRegistry {
   private readonly bound: BoundEntry[] = [];
   private readonly accessPolicy?: McpAccessPolicy;
   private readonly validateAccess?: McpAccessValidator;
+  private readonly describeWith?: McpDescriptionTransform;
   /** Memoised `reservedNames()`; dropped by register() so it can never go stale. */
   private reserved?: ReadonlySet<string>;
 
   constructor(options: McpRegistryOptions = {}) {
     this.accessPolicy = options.accessPolicy;
     this.validateAccess = options.validateAccess;
+    this.describeWith = options.describe;
+  }
+
+  /**
+   * The one place a description is rewritten before it reaches a client, so a
+   * placeholder resolves identically for a tool, a resource, a template and a
+   * prompt. No transform configured means the literal is registered as written.
+   */
+  private description(text: string | undefined): string | undefined {
+    if (text === undefined || !this.describeWith) return text;
+    return this.describeWith(text);
   }
 
   /**
@@ -293,7 +307,7 @@ export class McpRegistry {
   ): void {
     const config: Record<string, unknown> = {
       title: options.title,
-      description: options.description,
+      description: this.description(options.description),
       inputSchema: options.inputSchema,
       outputSchema: options.outputSchema,
       annotations: options.annotations,
@@ -325,7 +339,7 @@ export class McpRegistry {
   ): void {
     const metadata: Record<string, unknown> = {
       title: options.title,
-      description: options.description,
+      description: this.description(options.description),
       mimeType: options.mimeType,
       _meta: options._meta,
     };
@@ -345,7 +359,7 @@ export class McpRegistry {
   ): void {
     const metadata: Record<string, unknown> = {
       title: options.title,
-      description: options.description,
+      description: this.description(options.description),
       mimeType: options.mimeType,
       _meta: options._meta,
     };
@@ -376,7 +390,7 @@ export class McpRegistry {
       options.argsSchema !== undefined && Object.keys(options.argsSchema).length > 0 ? options.argsSchema : undefined;
     const config: Record<string, unknown> = {
       title: options.title,
-      description: options.description,
+      description: this.description(options.description),
       argsSchema,
     };
     const cb =

@@ -6,11 +6,11 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { McpRegistryService } from '../../nest-mcp';
 import type { User } from '../../types';
 import { ADDON_IDS } from '../../addons';
-import { getMcpSafeUrl } from '../../app-config';
+import { getMcpSafeUrl, getMcpServerName } from '../../app-config';
 import { registerTools } from '../../mcp/tools';
 import { sessions, evictOldestSessionForUser } from '../../mcp/sessionManager';
 import { SESSION_TTL_MS, MAX_SESSIONS_PER_USER, KEEPALIVE_MS, isRateLimited } from '../../mcp';
-import { BASE_MCP_INSTRUCTIONS, STATIC_TOKEN_DEPRECATION_NOTICE } from './mcp-transport.constants';
+import { buildMcpInstructions, staticTokenDeprecationNotice } from './mcp-transport.constants';
 import { AuthService } from '../auth/auth.service';
 import { TokenService } from '../tokens/token.service';
 import { OauthService } from '../oauth/oauth.service';
@@ -102,7 +102,7 @@ export function setAuthChallenge(res: Response, error = 'invalid_token'): void {
   const base = trimTrailingSlashes(getMcpSafeUrl() || '');
   // RFC 9728 §5: resource with path component /mcp → PRM URL must include the path
   res.set('WWW-Authenticate',
-      `Bearer realm="TREK MCP", resource_metadata="${base}/.well-known/oauth-protected-resource/mcp", error="${error}"`);
+      `Bearer realm="${getMcpServerName()}", resource_metadata="${base}/.well-known/oauth-protected-resource/mcp", error="${error}"`);
 }
 
 export interface VerifyTokenResult {
@@ -249,7 +249,7 @@ export class McpTransportService {
     // Create a new per-user MCP server and session
     const server = new McpServer(
         {
-          name: 'TREK MCP',
+          name: getMcpServerName(),
           version: '1.0.0',
         },
         {
@@ -258,7 +258,7 @@ export class McpTransportService {
             tools: { listChanged: true },
             prompts: { listChanged: true },
           },
-          instructions: BASE_MCP_INSTRUCTIONS + (isStaticToken ? STATIC_TOKEN_DEPRECATION_NOTICE : ''),
+          instructions: buildMcpInstructions() + (isStaticToken ? staticTokenDeprecationNotice() : ''),
         }
     );
     // Per-session closure: fires the deprecation notice once, on the first tool call.
@@ -268,7 +268,7 @@ export class McpTransportService {
     const getDeprecationNotice = (): string | null => {
       if (!isStaticToken || _noticeEmitted) return null;
       _noticeEmitted = true;
-      return STATIC_TOKEN_DEPRECATION_NOTICE;
+      return staticTokenDeprecationNotice();
     };
 
     // Tool-call audit trail: who called which tool, when, from where. Fired by

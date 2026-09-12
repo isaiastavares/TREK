@@ -31,8 +31,12 @@ import {
 
 export type RawEnv = Record<string, string | undefined>;
 
+/** The name a TREK install answers to when nobody has renamed it. */
+export const DEFAULT_APP_NAME = 'TREK';
+
 export function deriveApp(raw: RawEnv) {
   const nodeEnv = raw.NODE_ENV;
+  const appName = raw.APP_NAME?.trim() || DEFAULT_APP_NAME;
   return {
     /** Raw NODE_ENV — for the case-SENSITIVE sites (`=== 'production'` in globalMiddleware HSTS, platform statics, spa-fallback; `=== 'development'` in authService.dev_mode). */
     nodeEnv,
@@ -44,6 +48,19 @@ export function deriveApp(raw: RawEnv) {
     host: raw.HOST,
     /** Raw APP_VERSION — fallbacks differ per site ('0.0.0' vs package.json vs semver-validated); each keeps its own. */
     appVersion: raw.APP_VERSION,
+    /**
+     * The product name, in one place instead of the dozens of literals it used
+     * to be. Every surface that announces this install to somebody else — the
+     * outbound User-Agent, the PRODID of a downloaded .ics, the OpenAPI title,
+     * the MCP server's name, the subject of an email — derives its text from
+     * here, so renaming means setting one variable rather than hunting strings.
+     *
+     * Unset is the whole point of the default: an install that says nothing
+     * emits exactly the bytes it always did.
+     */
+    appName,
+    /** Whether this install still presents as TREK — the logo and the tagline are the acronym's, and stay with it. */
+    isDefaultAppName: appName === DEFAULT_APP_NAME,
     /** Raw APP_URL — trailing-slash stripping differs per site (feeds strips one, notifications strips all). */
     appUrl: raw.APP_URL,
     tz: raw.TZ,
@@ -209,6 +226,13 @@ export function deriveSmtp(raw: RawEnv) {
     user: raw.SMTP_USER,
     pass: raw.SMTP_PASS,
     from: raw.SMTP_FROM,
+    /**
+     * Display name for the From header, or undefined to leave the configured
+     * sender exactly as the operator wrote it. Falls back to APP_NAME so the
+     * common case is one variable; it exists on its own because a relay's
+     * verified sender identity may have to differ from the product name.
+     */
+    fromName: raw.MAIL_FROM_NAME?.trim() || raw.APP_NAME?.trim() || undefined,
     skipTlsVerify: parseBool(raw.SMTP_SKIP_TLS_VERIFY) === true,
   };
 }

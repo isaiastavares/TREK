@@ -5,10 +5,34 @@ import { publicReservationSql, publicStaySql } from '../reservations/reservation
 import { addDays } from '../days/days.service';
 import { resolveTimeZone } from '../common/timezoneService';
 import { NotFoundError } from '../common/domain-errors';
+import { readEnv } from '../../app-config';
 
-/** The VCALENDAR preamble every TREK calendar starts with, single-trip or merged. */
-export const CALENDAR_HEADER =
-  'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TREK//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
+/**
+ * The VCALENDAR preamble every calendar starts with, single-trip or merged.
+ *
+ * A function rather than a constant because the product name is read from the
+ * environment, and RFC 5545 §3.2 makes PRODID a TEXT value: a name carrying a
+ * backslash, a semicolon, a comma or a newline has to be escaped or it ends the
+ * property early and corrupts every following line of the file.
+ */
+export function calendarHeader(): string {
+  const product = escapeICSText(readEnv().app.appName);
+  return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//${product}//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n`;
+}
+
+/**
+ * RFC 5545 §3.3.11 TEXT escaping. Was a closure inside buildTripCalendar; hoisted
+ * unchanged because the PRODID above needs the same treatment, and two copies of
+ * an escape rule is how one of them ends up a character short.
+ */
+function escapeICSText(s: string): string {
+  return s
+    .replaceAll(/\\/g, '\\\\')
+    .replaceAll(';', '\\;')
+    .replaceAll(',', '\\,')
+    .replace(/\r?\n/g, '\\n')
+    .replaceAll(/\r/g, '');
+}
 
 /** One trip's calendar in parts, so callers can merge several without re-parsing text. */
 export interface TripCalendar {
@@ -171,12 +195,7 @@ export class CalendarService {
       )
       .all(tripId) as any[];
 
-    const esc = (s: string) => s
-      .replaceAll(/\\/g, '\\\\')
-      .replaceAll(';', '\\;')
-      .replaceAll(',', '\\,')
-      .replace(/\r?\n/g, '\\n')
-      .replaceAll(/\r/g, '');
+    const esc = escapeICSText;
     const fmtDate = (d: string) => d.replaceAll('-', '');
     const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     const uid = (id: number, type: string) => `trek-${type}-${id}@trek`;
@@ -730,9 +749,12 @@ export class CalendarService {
 
     // \w + space/tab, not \s: JS \s admits U+3000 and friends — codepoints
     // Node's header validation refuses, so they 500'd the export (#2165).
-    const safeFilename = (trip.title || 'trek-trip').replace(/["\r\n]/g, '').replace(/[^\w \t.-]/g, '_');
+    // Untitled trips fall back to the instance's own name, lowercased the way
+    // the legacy 'trek-trip' literal was; the sanitizer below handles the rest.
+    const untitled = `${readEnv().app.appName.toLowerCase()}-trip`;
+    const safeFilename = (trip.title || untitled).replace(/["\r\n]/g, '').replace(/[^\w \t.-]/g, '_');
     return {
-      calName: esc(trip.title || 'TREK Trip'),
+      calName: esc(trip.title || `${readEnv().app.appName} Trip`),
       filename: `${safeFilename}.ics`,
       timezones,
       events,
@@ -743,7 +765,7 @@ export class CalendarService {
   exportICS(tripId: string | number): { ics: string; filename: string } {
     const cal = this.buildTripCalendar(tripId);
     const ics =
-      CALENDAR_HEADER +
+      calendarHeader() +
       `X-WR-CALNAME:${cal.calName}\r\n` +
       [...cal.timezones.values()].join('') +
       cal.events.join('') +

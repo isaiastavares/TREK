@@ -244,9 +244,20 @@ export interface McpRegistryListing {
  */
 export type McpAccessValidator = (access: McpDeclarativeAccess, entry: McpRegistryListing) => string | null | undefined;
 
+/**
+ * Applied to every description before it is registered on a session's server.
+ *
+ * Exists because a description is written once, as a static literal next to its
+ * handler, but may need to name something only the host knows at runtime — the
+ * product name, in TREK's case. Run at attach time, so the value is read per
+ * session rather than frozen when the decorator was evaluated.
+ */
+export type McpDescriptionTransform = (description: string) => string;
+
 export interface McpModuleOptions {
   accessPolicy?: McpAccessPolicy;
   validateAccess?: McpAccessValidator;
+  describe?: McpDescriptionTransform;
 }
 
 /** Injection token for the options object given to `McpModule.forRoot()`. */

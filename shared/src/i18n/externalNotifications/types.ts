@@ -1,3 +1,9 @@
+/**
+ * `{appName}` is substituted at render time with the name the instance goes by
+ * (server/src/app-config deriveBrand → 'TREK' unless a managed operator has set
+ * APP_NAME). A locale that still spells the name out renders it literally, so a
+ * translation lagging behind is stale wording, never a broken mail.
+ */
 export interface EmailStrings {
   footer: string;
   manage: string;
@@ -12,6 +18,7 @@ export interface EventText {
 
 export type EventTextFn = (params: Record<string, string>) => EventText;
 
+/** `body` carries the `{appName}` placeholder — see EmailStrings above. */
 export interface PasswordResetStrings {
   subject: string;
   greeting: string;

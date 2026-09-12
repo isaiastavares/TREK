@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { DatabaseService } from '../database/database.service';
-import { CalendarService, CALENDAR_HEADER, foldICS } from '../calendar/calendar.service';
+import { CalendarService, calendarHeader, foldICS } from '../calendar/calendar.service';
 
 /** Subscribable calendars advertise how often to re-fetch; the one-time download does not. */
 const FEED_REFRESH_HINTS = 'REFRESH-INTERVAL;VALUE=DURATION:PT1H\r\nX-PUBLISHED-TTL:PT1H\r\n';
@@ -119,7 +119,7 @@ export class FeedsService {
       // hints so clients re-fetch hourly. Assembled from the calendar's parts
       // rather than string-surgeried into the finished text.
       const ics = foldICS(
-        CALENDAR_HEADER +
+        calendarHeader() +
           FEED_REFRESH_HINTS +
           `X-WR-CALNAME:${cal.calName}\r\n` +
           [...cal.timezones.values()].join('') +
@@ -156,7 +156,7 @@ export class FeedsService {
       s.replaceAll('\\', '\\\\').replaceAll(';', '\\;').replaceAll(',', '\\,').replace(/\r?\n/g, '\\n');
 
     const calName = `${user.username} – All Trips`;
-    let header = CALENDAR_HEADER;
+    let header = calendarHeader();
     header += `X-WR-CALNAME:${esc(calName)}\r\n`;
     header += FEED_REFRESH_HINTS;
 

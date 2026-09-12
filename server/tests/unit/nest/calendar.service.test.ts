@@ -662,6 +662,24 @@ describe('exportICS', () => {
     expect(filename).toBe('trek-trip.ics');
   });
 
+  it('CAL-020b: the fallback name and the PRODID follow APP_NAME', () => {
+    const previous = process.env.APP_NAME;
+    process.env.APP_NAME = 'Acme Trips';
+    try {
+      const { user } = createUser(testDb);
+      const trip = createTrip(testDb, user.id, { title: '', start_date: '2025-06-01', end_date: '2025-06-02' });
+
+      const { ics, filename } = svc.exportICS(trip.id);
+
+      expect(ics).toContain('PRODID:-//Acme Trips//Travel Planner//EN');
+      expect(ics).toContain('X-WR-CALNAME:Acme Trips Trip');
+      expect(filename).toBe('acme trips-trip.ics');
+    } finally {
+      if (previous === undefined) delete process.env.APP_NAME;
+      else process.env.APP_NAME = previous;
+    }
+  });
+
   it('CAL-021: a corrupt day date degrades the VTIMEZONE offset instead of throwing', () => {
     const { user } = createUser(testDb);
     const trip = createTrip(testDb, user.id, { title: 'Corrupt Date' });

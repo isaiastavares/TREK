@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const br: NotificationLocale = {
   email: {
-    footer: 'Você recebeu isso porque tem as notificações ativadas no TREK.',
+    footer: 'Você recebeu isso porque tem as notificações ativadas no {appName}.',
     manage: 'Gerenciar preferências nas configurações',
     madeWith: 'Made with',
-    openTrek: 'Abrir TREK',
+    openTrek: 'Abrir {appName}',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,15 +26,15 @@ const br: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Convite Vacay Fusion',
-      body: `${p.actor} convidou você para fundir planos de férias. Abra o TREK para aceitar ou recusar.`,
+      body: `${p.actor} convidou você para fundir planos de férias. Abra o {appName} para aceitar ou recusar.`,
     }),
     vacay_share: (p) => ({
       title: 'Calendário Vacay compartilhado',
-      body: `${p.actor} compartilhou o calendário de férias com você. Abra o TREK para visualizar.`,
+      body: `${p.actor} compartilhou o calendário de férias com você. Abra o {appName} para visualizar.`,
     }),
     collection_invite: (p) => ({
       title: 'Convite para coleção',
-      body: `${p.actor} convidou você para compartilhar uma coleção. Abra o TREK para aceitar ou recusar.`,
+      body: `${p.actor} convidou você para compartilhar uma coleção. Abra o {appName} para aceitar ou recusar.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} fotos compartilhadas`,
@@ -67,7 +67,7 @@ const br: NotificationLocale = {
   passwordReset: {
     subject: 'Redefinir sua senha',
     greeting: 'Olá',
-    body: 'Recebemos um pedido para redefinir a senha da sua conta TREK. Clique no botão abaixo para definir uma nova senha.',
+    body: 'Recebemos um pedido para redefinir a senha da sua conta {appName}. Clique no botão abaixo para definir uma nova senha.',
     ctaIntro: 'Redefinir senha',
     expiry: 'Este link expira em 60 minutos.',
     ignore: 'Se você não solicitou isto, pode ignorar este e-mail — sua senha não será alterada.',
